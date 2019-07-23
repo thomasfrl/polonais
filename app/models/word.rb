@@ -1,16 +1,15 @@
 class Word < ApplicationRecord
   before_save :check_if_unique
 
+  enum type: %i[verbe adjectif mot_commun adverbe pronom autre]
 
-  %w[word type personn grammatical_case number gender].each do |association|
-    define_method("associated_#{association.pluralize}") do
-      self.send("#{association}_ids".to_sym).map { |id| association.camelize.constantize.find(id) }
-    end
-
-    define_method("#{association}_values") do
-      self.send("#{association}_ids".to_sym).map { |id| association.camelize.constantize.find(id).value }
-    end
-  end
+  enum genre: %i[masculin feminin neutre]
+  
+  enum number: %i[sigulier pluriel]
+  
+  enum grammatical_case: %i[nominatif accusatif gerondif datif instrumental locatif vocatif]
+  
+  enum personn: %i[première seconde troisième]
 
   def total_counter
     total = counter

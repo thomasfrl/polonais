@@ -1,2 +1,0 @@
-class Gender < ApplicationRecord
-end

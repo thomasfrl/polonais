@@ -5,11 +5,11 @@ class CreateWords < ActiveRecord::Migration[5.2]
       t.string :content
       t.string :traduction, array: true, default: []
       t.boolean :valid, default: false
-      t.integer :word_ids, array: true, default: []
-      t.integer :type_ids, array: true, default: []
-      t.integer :person_ids, array: true, default: []
-      t.integer :grammatical_case_ids, array: true, default: []
-      t.integer :number_ids, array: true, default: []
+      t.integer :word, default: nil
+      t.integer :type, default: nil
+      t.integer :person, default: nil
+      t.integer :grammatical_case, default: nil
+      t.integer :number, default: nil
       t.timestamps
       t.integer :counter, default: nil
     end

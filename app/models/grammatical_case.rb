@@ -1,2 +1,0 @@
-class GrammaticalCase < ApplicationRecord
-end
