@@ -1,8 +1,15 @@
 class Word < ApplicationRecord
   before_save :check_if_unique
 
-  def associated_words
-    self.associated_ids.map {|id| Word.find(id)}
+
+  %w[word type personn grammatical_case number gender].each do |association|
+    define_method("associated_#{association.pluralize}") do
+      self.send("#{association}_ids".to_sym).map { |id| association.camelize.constantize.find(id) }
+    end
+
+    define_method("#{association}_values") do
+      self.send("#{association}_ids".to_sym).map { |id| association.camelize.constantize.find(id).value }
+    end
   end
 
   def total_counter
