@@ -1,5 +1,5 @@
 class Word < ApplicationRecord
-  before_save :check_if_unique
+  # before_save :check_if_unique
 
   enum type: %i[verbe adjectif mot_commun adverbe pronom autre]
 
@@ -11,6 +11,12 @@ class Word < ApplicationRecord
   
   enum personn: %i[première seconde troisième]
 
+  belongs_to :fake_word, optional: true
+
+  def associated_words
+    self.words_ids.map { |id| Word.find(id) }
+  end
+
   def total_counter
     total = counter
     associated_words.each do |word|
@@ -19,16 +25,18 @@ class Word < ApplicationRecord
     total
   end
 
-  scope :all_main, -> { where(main: true, valid: true).order( : :desc) }
-  scope :valid, -> { where(valid: true).order(counter: :desc) }
-  scope :not_valid, -> { where(valid: false).order(counter: :desc) }
+  # scope :all_main, -> { where(main: true, valid: true).order( : :desc) }
+  # scope :valid, -> { where(valid: true).order(counter: :desc) }
+  # scope :not_valid, -> { where(valid: false).order(counter: :desc) }
 
   private
 
-  def check_if_unique
-    if where(content: content).empty?
-      valid = false
-      return true
-    end 
-  end
+#   def check_if_unique
+#     if where(content: content).empty?
+#       valid = false
+#       return true
+#     end 
+#   end
+
+
 end

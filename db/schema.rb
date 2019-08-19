@@ -10,9 +10,33 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 2019_06_27_212033) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "fake_words", force: :cascade do |t|
+    t.string "content"
+    t.integer "counter"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "words", force: :cascade do |t|
+    t.boolean "main"
+    t.string "content"
+    t.string "traduction", default: [], array: true
+    t.boolean "is_valid", default: false
+    t.integer "word_ids", default: [], array: true
+    t.integer "type"
+    t.integer "person"
+    t.integer "grammatical_case"
+    t.integer "number"
+    t.bigint "fake_word_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fake_word_id"], name: "index_words_on_fake_word_id"
+    t.index ["word_ids"], name: "index_words_on_word_ids", using: :gin
+  end
 
 end
