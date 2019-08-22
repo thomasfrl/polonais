@@ -22,13 +22,43 @@ namespace :word do
 
   task scrap_conjuguate: :environment do |t, word|
     uri = URI("https://fr.bab.la/conjugaison/polonais/#{word.downcase}")
-    post = Net::HTTP.get(uri)
+    post = Nokogiri::HTML(Net::HTTP.get(uri))
     # check if good page
     # look for each 'word' in the page
     # for each word 'analyse' word
     # for each new word save the word
+
+    post.css('.conj-tense-wrapper').each do |mode|
+      mode.css('.conj-tense-block').each do |time|
+        time.css('.conj-item').each do |conjuguate_item|
+          person = conjuguate_item.css('.conj-person').first.content
+          content = conjuguate_item.css('.conj-result').first.content
+          puts person
+          puts content
+        end
+      end
+    end
+
     post.css('#conjFull > div:nth-child(2)').each do |element|
       element.content
     end
   end
 end
+
+
+def analyze_person(person)
+  genre = person.slice!(/\(.+o\)/)[1...-1]
+  person.strip!
+end
+
+def analyze_time
+end
+
+def analyze_mode
+end
+
+# .conj-tense-wrapper(conj-block container result-block) = mode
+#   .conj-tense-block(conj-tense-block-header) = temps
+#     .conj-item
+#       conj-person = pronom
+#       conj-result = conjugaison
