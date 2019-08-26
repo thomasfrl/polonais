@@ -2,7 +2,7 @@ class CreateWords < ActiveRecord::Migration[5.2]
   def change
     create_table :words do |t|
       t.boolean :main, default: nil
-      t.string :content
+      t.string :content, default: nil
       t.string :traduction, array: true, default: []
       t.boolean :is_valid, default: false
       t.integer :word_ids, array: true, default: []

@@ -20,45 +20,40 @@ namespace :word do
     # puts page.css('.ekran')
   end
 
-  task scrap_conjuguate: :environment do |t, word|
-    uri = URI("https://fr.bab.la/conjugaison/polonais/#{word.downcase}")
+  task scrap_conjuguate: :environment do |t, false_word|
+    uri = URI("https://fr.bab.la/conjugaison/polonais/#{false_word.downcase}")
     post = Nokogiri::HTML(Net::HTTP.get(uri))
+    # miss:
     # check if good page
-    # look for each 'word' in the page
-    # for each word 'analyse' word
-    # for each new word save the word
+    # check if already exist word
+
+    main_word_content = post.css('h2').first.content
+    main_word_content.slice('polonaisConjugaison de «')
+    main_word_content.slice('»')
+    main_word_content.strip!
+    main_word = Word.new(content: main_word_content, type: 'verbe', mode: 'infinitif')
+    main_word.save
 
     post.css('.conj-tense-wrapper').each do |mode|
+      mode_name = mode.css('.conj-block.container.result-block').first.content
       mode.css('.conj-tense-block').each do |time|
+        time_name = time.css('.conj-tense-block-header').first.content
         time.css('.conj-item').each do |conjuguate_item|
-          person = conjuguate_item.css('.conj-person').first.content
+          pronom  = conjuguate_item.css('.conj-person').first.content
           content = conjuguate_item.css('.conj-result').first.content
-          puts person
-          puts content
+          puts "mode: #{mode_name}"
+          puts "time:  #{time_name}"
+          puts "pronom: #{pronom}"
+          puts "content: #{content}"
+          # word = Word.new(content: content)
+          # word.set_pronom(pronom)
+          # word.set_time(time)
+          # word.set_mode(mode)
+          # word.false_word = fake_word if false_word == content
+          # word.main_word = main_word
+          # word.save
         end
       end
     end
-
-    post.css('#conjFull > div:nth-child(2)').each do |element|
-      element.content
-    end
   end
 end
-
-
-def analyze_person(person)
-  genre = person.slice!(/\(.+o\)/)[1...-1]
-  person.strip!
-end
-
-def analyze_time
-end
-
-def analyze_mode
-end
-
-# .conj-tense-wrapper(conj-block container result-block) = mode
-#   .conj-tense-block(conj-tense-block-header) = temps
-#     .conj-item
-#       conj-person = pronom
-#       conj-result = conjugaison
