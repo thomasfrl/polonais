@@ -16,8 +16,16 @@ namespace :word do
 
 
   task scrap_odmiany: :environment do |t, word|
-    page = Nokogiri::HTML(open("http://odmiana.net/odmiana-przez-przypadki-rzeczownika-#{word.downcase}"))
-    # puts page.css('.ekran')
+    uri = {}
+    uri[:adjectif] = URI("http://odmiana.net/odmiana-przez-przypadki-przymiotnika-#{word.downcase}")
+    uri[:name]     = URI("http://odmiana.net/odmiana-przez-przypadki-rzeczownika-#{word.downcase}")
+
+    uri.each do |type, link|
+      post = Nokogiri::HTML(Net::HTTP.get(link))
+      if post.css('h1').text != '301 Moved'
+        send("analyze_#{type}", post)
+      end
+    end
   end
 
   task scrap_conjuguate: :environment do |t, false_word|
@@ -53,6 +61,19 @@ namespace :word do
           # word.main_word = main_word
           # word.save
         end
+      end
+    end
+  end
+
+  def analyze_adjectif(post)
+    trs = post.css('tbody tr')
+    analyze_genre(trs.shift)
+    trs.each do |tr|
+      tds = tr.css('td')
+      analyze_case(tds.shift)
+      tds.each do |td|
+        word = td.text
+        #miss analyze of colspan
       end
     end
   end
