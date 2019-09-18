@@ -15,10 +15,15 @@ namespace :word do
   end
 
 
-  task scrap_odmiany: :environment do |t, word|
+  task scrap_odmiany: :environment do |t, false_word|
+    # miss:
+    # check if good page (not working)
+    # check if already exist word
+    # relation main_word, false_word
+
     uri = {}
-    uri[:adjectif] = URI("http://odmiana.net/odmiana-przez-przypadki-przymiotnika-#{word.downcase}")
-    uri[:name]     = URI("http://odmiana.net/odmiana-przez-przypadki-rzeczownika-#{word.downcase}")
+    uri[:adjectif] = URI("http://odmiana.net/odmiana-przez-przypadki-przymiotnika-#{false_word.downcase}")
+    uri[:name]     = URI("http://odmiana.net/odmiana-przez-przypadki-rzeczownika-#{false_word.downcase}")
 
     uri.each do |type, link|
       post = Nokogiri::HTML(Net::HTTP.get(link))
@@ -66,15 +71,34 @@ namespace :word do
   end
 
   def analyze_adjectif(post)
-    trs = post.css('tbody tr')
-    analyze_genre(trs.shift)
+    trs = post.css('tbody tr').drop(1)
+    genres = trs.shift.css('td').drop(1).map(&:text)
     trs.each do |tr|
       tds = tr.css('td')
-      analyze_case(tds.shift)
-      tds.each do |td|
-        word = td.text
+      grammatical_case = tds.shift.text
+      tds.each_with_index do |td, i|
+        puts td.text
+        # word = Word.new(content: td.text)
+        # word.set_genre_and_number(genres[i])
+        # word.set_case(grammatical_case)
         #miss analyze of colspan
       end
     end
   end
+
+  def analyze_name(post)
+    trs = post.css('tbody tr').drop(1)
+    trs.each do |tr|
+      tds = tr.css('td')
+      grammatical_case = tds.shift.text
+      tds.each_with_index do |td, i|
+        puts td.text
+        # word = Word.new(content: td.text)
+        # word.set_case(grammatical_case)
+        # word.number = i == 0 ? 'singulier' : 'pluriel'
+        #miss analyze of colspan
+      end
+    end
+  end
+
 end

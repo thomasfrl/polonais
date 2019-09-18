@@ -3,7 +3,7 @@ class Word < ApplicationRecord
 
   enum type: %i[verbe adjectif mot_commun adverbe pronom autre]
 
-  enum genre: %i[masculin feminin neutre masculin_personnel masculin_animé]
+  enum genre: %i[masculin feminin neutre masculin_personnel masculin_animé commun]
 
   enum number: %i[sigulier pluriel]
 
