@@ -106,6 +106,52 @@ class Word < ApplicationRecord
     end
   end
 
+  def set_genre_and_number(raw_genre)
+    case raw_genre
+    when 'r.mo./r.mzw'
+      genre = 'masculin_animé'
+      number = 'sigulier'
+    when 'r.mrz.'
+      genre = 'masculin'
+      number = 'sigulier'
+    when 'r.ż'
+      genre  = 'feminin'
+      number = 'sigulier'
+    when 'r.n'
+      genre  = 'neutre'
+      number = 'sigulier'
+    when 'r.mo.'
+      genre  = 'masculin_personnel'
+      number = 'pluriel'
+    when 'r.nmo.'
+      genre  = 'commun'
+      number = 'pluriel'
+    else
+      genre = nil
+    end
+  end
+
+  def set_case(raw_case)
+    case raw_case
+    when /Mianownik/
+      grammatical_case = 'nominatif'
+    when /Dopełniacz/
+      grammatical_case = 'génétif'
+    when /Celownik/
+      grammatical_case = 'datif'
+    when /Biernik/
+      grammatical_case = 'accustaif'
+    when /Narzędnik/
+      grammatical_case = 'instrumental'
+    when /Miejscownik/
+      grammatical_case = 'locatif'
+    when /Wołacz/
+      grammatical_case = 'vocatif'
+    else
+      grammatical_case = nil
+    end
+  end
+
   # def total_counter
   #   total = counter
   #   associated_words.each do |word|
