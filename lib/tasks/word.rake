@@ -15,26 +15,26 @@ namespace :word do
   end
 
 
-  task scrap_odmiany: :environment do |t, false_word|
+  task scrap_odmiany: :environment do |t, fake_word|
     # miss:
     # check if good page (not working)
     # check if already exist word
-    # relation main_word, false_word
+    # relation main_word, fake_word
 
     uri = {}
-    uri[:adjectif] = URI("http://odmiana.net/odmiana-przez-przypadki-przymiotnika-#{false_word.downcase}")
-    uri[:name]     = URI("http://odmiana.net/odmiana-przez-przypadki-rzeczownika-#{false_word.downcase}")
+    uri[:adjectif] = URI("http://odmiana.net/odmiana-przez-przypadki-przymiotnika-#{fake_word.downcase}")
+    uri[:name]     = URI("http://odmiana.net/odmiana-przez-przypadki-rzeczownika-#{fake_word.downcase}")
 
     uri.each do |type, link|
       post = Nokogiri::HTML(Net::HTTP.get(link))
       if post.css('h1').text != '301 Moved'
-        send("analyze_#{type}", post)
+        send("analyze_#{type}", post, fake_word)
       end
     end
   end
 
-  task scrap_conjuguate: :environment do |t, false_word|
-    uri = URI("https://fr.bab.la/conjugaison/polonais/#{false_word.downcase}")
+  task scrap_conjuguate: :environment do |t, fake_word|
+    uri = URI("https://fr.bab.la/conjugaison/polonais/#{fake_word.downcase}")
     post = Nokogiri::HTML(Net::HTTP.get(uri))
     # miss:
     # check if good page
@@ -62,7 +62,7 @@ namespace :word do
           # word.set_pronom(pronom)
           # word.set_time(time)
           # word.set_mode(mode)
-          # word.false_word = fake_word if false_word == content
+          # word.fake_word = fake_word if fake_word == content
           # word.main_word = main_word
           # word.save
         end
@@ -70,7 +70,7 @@ namespace :word do
     end
   end
 
-  def analyze_adjectif(post)
+  def analyze_adjectif(post, fake_word)
     trs = post.css('tbody tr').drop(1)
     genres = trs.shift.css('td').drop(1).map(&:text)
     trs.each do |tr|
@@ -81,12 +81,23 @@ namespace :word do
         # word = Word.new(content: td.text)
         # word.set_genre_and_number(genres[i])
         # word.set_case(grammatical_case)
+        # word.fake_word = fake_word if fake_word == content
+        # if word.number == 'singulier' && word.grammatical_case == 'nominatif'
+          # word.main = true
+          # main_word = word
+        # words << word
         #miss analyze of colspan
       end
     end
+    # words.each do |word|
+    #   word.main_word = main_word
+    #   word.save
+    # end
   end
 
-  def analyze_name(post)
+  def analyze_name(post, fake_word)
+    words = []
+    main_word = ''
     trs = post.css('tbody tr').drop(1)
     trs.each do |tr|
       tds = tr.css('td')
@@ -96,9 +107,17 @@ namespace :word do
         # word = Word.new(content: td.text)
         # word.set_case(grammatical_case)
         # word.number = i == 0 ? 'singulier' : 'pluriel'
+        # word.fake_word = fake_word if fake_word == content
+        # if word.number == 'singulier' && word.grammatical_case == 'nominatif'
+          # word.main = true
+          # main_word = word
+        # words << word
         #miss analyze of colspan
       end
     end
+    # words.each do |word|
+    #   word.main_word = main_word
+    #   word.save
+    # end
   end
-
 end
