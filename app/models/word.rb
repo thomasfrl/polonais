@@ -30,7 +30,7 @@ class Word < ApplicationRecord
     end
   end
 
-  %i[case person_and_number].each do |name|
+  %i[case pronom].each do |name|
     define_method "set_#{name}" do |string|
       associate_attributes = nil
       send("#{name}_collection").each do |regex, attributes|
@@ -86,16 +86,16 @@ class Word < ApplicationRecord
     }
   end
 
-  def person_and_number_collection
-    { :ja  => { number: :singulier, person: :première },
-      :ty  => { number: :singulier, person: :seconde },
-      :on  => { number: :singulier, person: :troisième },
-      :ona => { number: :singulier, person: :troisième },
-      :ono => { number: :singulier, person: :troisième },
-      :my  => { number: :pluriel,   person: :première },
-      :wy  => { number: :pluriel,   person: :seconde },
-      :oni => { number: :pluriel,   person: :troisième },
-      :one => { number: :pluriel,   person: :troisième } }
+  def pronom_collection
+    { :ja  => { number: :singulier, person: :première,  genre: :commun },
+      :ty  => { number: :singulier, person: :seconde,   genre: :commun },
+      :on  => { number: :singulier, person: :troisième, genre: :masculin },
+      :ona => { number: :singulier, person: :troisième, genre: :feminin },
+      :ono => { number: :singulier, person: :troisième, genre: :neutre },
+      :my  => { number: :pluriel,   person: :première,  genre: :commun },
+      :wy  => { number: :pluriel,   person: :seconde,   genre: :commun },
+      :oni => { number: :pluriel,   person: :troisième, genre: :masculin },
+      :one => { number: :pluriel,   person: :troisième, genre: :commun } }
   end
 
   def case_collection
