@@ -32,11 +32,12 @@ class Word < ApplicationRecord
 
   %i[case person_and_number].each do |name|
     define_method "set_#{name}" do |string|
-      all_attributes = send("#{name}_analyze")
-      attributes_key = all_attributes.keys.find { |key| string =~ /#{key}/}
-      attributes     = all_attributes[attributes_key]
+      associate_attributes = nil
+      send("#{name}_analyze").each do |regex, attributes|
+        associate_attributes = attributes if string =~ /#{regex}/
+      end
 
-      set_attributes(attributes)
+      set_attributes(associate_attributes)
     end
   end
 
