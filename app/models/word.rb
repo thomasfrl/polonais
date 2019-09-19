@@ -24,7 +24,7 @@ class Word < ApplicationRecord
 
   %i[genre_and_number time mode genre].each do |name|
     define_method "set_#{name}" do |string|
-      attributes = send("#{name}_analyze")[string.to_sym]
+      attributes = send("#{name}_collection")[string.to_sym]
 
       set_attributes(attributes)
     end
@@ -33,7 +33,7 @@ class Word < ApplicationRecord
   %i[case person_and_number].each do |name|
     define_method "set_#{name}" do |string|
       associate_attributes = nil
-      send("#{name}_analyze").each do |regex, attributes|
+      send("#{name}_collection").each do |regex, attributes|
         associate_attributes = attributes if string =~ /#{regex}/
       end
 
@@ -44,9 +44,7 @@ class Word < ApplicationRecord
   def set_attributes(attributes)
     return nil unless attributes
 
-    attributes.each do |attribute_name, attribute_value|
-      send("#{attribute_name}=", attribute_value)
-    end
+    assign_attributes(attributes)
   end
 
   # def total_counter
@@ -63,7 +61,7 @@ class Word < ApplicationRecord
 
   private
 
-  def time_analyze
+  def time_collection
     {
       :'Czas teraźniejszy'     => { time: :présent },
       :'Czas przeszły'         => { time: :passé },
@@ -71,7 +69,7 @@ class Word < ApplicationRecord
     }
   end
 
-  def mode_analyze
+  def mode_collection
     {
       :'Tryb oznajmujący'     => { mode: :indicatif },
       :'Tryb przypuszczający' => { mode: :conditionnel },
@@ -80,7 +78,7 @@ class Word < ApplicationRecord
     }
   end
 
-  def genre_analyze
+  def genre_collection
     {
       :'m' => { genre: :masculin },
       :'f' => { genre: :feminin },
@@ -88,7 +86,7 @@ class Word < ApplicationRecord
     }
   end
 
-  def person_and_number_analyze
+  def person_and_number_collection
     { :ja  => { number: :singulier, person: :première },
       :ty  => { number: :singulier, person: :seconde },
       :on  => { number: :singulier, person: :troisième },
@@ -100,7 +98,7 @@ class Word < ApplicationRecord
       :one => { number: :pluriel,   person: :troisième } }
   end
 
-  def case_analyze
+  def case_collection
     {
       :Mianownik   => { case: :nominatif },
       :Dopełniacz  => { case: :génétif },
@@ -112,7 +110,7 @@ class Word < ApplicationRecord
     }
   end
 
-  def genre_and_number_analyze
+  def genre_and_number_collection
     { :'r.mo./r.mzw' => { genre: :masculin_animé,     number: :singulier },
       :'r.mrz.'      => { genre: :masculin,           number: :singulier },
       :'r.ż'         => { genre: :feminin,            number: :singulier },
