@@ -22,133 +22,29 @@ class Word < ApplicationRecord
   has_many :associated_words, class_name: 'Word', foreign_key: 'main_word_id'
   belongs_to :main_word, class_name: 'Word', optional: true
 
-  def set_time(raw_time)
-    case raw_time
-    when 'Czas teraźniejszy'
-      time = 'présent'
-    when 'Czas przeszły'
-      time = 'passé'
-    when 'Czas przyszły złożony'
-      time = 'future'
-    else
-      time = nil
+  %i[genre_and_number time mode genre].each do |name|
+    define_method "set_#{name}" do |string|
+      attributes = send("#{name}_analyze")[string.to_sym]
+
+      set_attributes(attributes)
     end
   end
 
-  def set_mode(raw_mode)
-    case raw_mode
-    when 'Tryb oznajmujący'
-      mode = 'indicatif'
-    when 'Tryb przypuszczający'
-      mode = 'conditionnel'
-    when 'Tryb rozkazujący'
-      mode = 'imperatif'
-    when 'Imiesłowy'
-      mode = participe
-    else
-      mode = nil
+  %i[case person_and_number].each do |name|
+    define_method "set_#{name}" do |string|
+      all_attributes = send("#{name}_analyze")
+      attributes_key = all_attributes.keys.find { |key| string =~ /#{key}/}
+      attributes     = all_attributes[attributes_key]
+
+      set_attributes(attributes)
     end
   end
 
-  def set_pronom(pronom)
-    raw_genre = person.slice!(/\(.+o\)/)[1...-1]
-    pronom.strip!
+  def set_attributes(attributes)
+    return nil unless attributes
 
-    set_genre(raw_genre)
-    set_person_and_number(pronom)
-  end
-
-  def set_genre(raw_genre)
-    case raw_genre
-    when 'm'
-      genre = 'masculin'
-    when 'f'
-      genre = 'feminin'
-    when 'n'
-      genre = 'neutre'
-    else
-      genre = nil
-    end
-  end
-
-  def set_person_and_number(pronom)
-    case pronom
-    when /ja/
-      number = 'singulier'
-      person = 'première'
-    when /ty/
-      number = 'singulier'
-      person = 'première'
-    when /on/
-      number = 'singulier'
-      person = 'troisième'
-    when /ona/
-      number = 'singulier'
-      person = 'troisième'
-    when /ono/
-      number = 'singulier'
-      person = 'troisième'
-    when /my/
-      number = 'pluriel'
-      person = 'première'
-    when /wy/
-      number = 'pluriel'
-      person = 'première'
-    when /oni/
-      number = 'pluriel'
-      person = 'troisième'
-    when /one/
-      number = 'pluriel'
-      person = 'troisième'
-    else
-      number = nil
-      person = nil
-    end
-  end
-
-  def set_genre_and_number(raw_genre)
-    case raw_genre
-    when 'r.mo./r.mzw'
-      genre = 'masculin_animé'
-      number = 'sigulier'
-    when 'r.mrz.'
-      genre = 'masculin'
-      number = 'sigulier'
-    when 'r.ż'
-      genre  = 'feminin'
-      number = 'sigulier'
-    when 'r.n'
-      genre  = 'neutre'
-      number = 'sigulier'
-    when 'r.mo.'
-      genre  = 'masculin_personnel'
-      number = 'pluriel'
-    when 'r.nmo.'
-      genre  = 'commun'
-      number = 'pluriel'
-    else
-      genre = nil
-    end
-  end
-
-  def set_case(raw_case)
-    case raw_case
-    when /Mianownik/
-      grammatical_case = 'nominatif'
-    when /Dopełniacz/
-      grammatical_case = 'génétif'
-    when /Celownik/
-      grammatical_case = 'datif'
-    when /Biernik/
-      grammatical_case = 'accustaif'
-    when /Narzędnik/
-      grammatical_case = 'instrumental'
-    when /Miejscownik/
-      grammatical_case = 'locatif'
-    when /Wołacz/
-      grammatical_case = 'vocatif'
-    else
-      grammatical_case = nil
+    attributes.each do |attribute_name, attribute_value|
+      send("#{attribute_name}=", attribute_value)
     end
   end
 
@@ -165,6 +61,64 @@ class Word < ApplicationRecord
   # scope :not_valid, -> { where(valid: false).order(counter: :desc) }
 
   private
+
+  def time_analyze
+    {
+      :'Czas teraźniejszy'     => { time: :présent },
+      :'Czas przeszły'         => { time: :passé },
+      :'Czas przyszły złożony' => { time: :future }
+    }
+  end
+
+  def mode_analyze
+    {
+      :'Tryb oznajmujący'     => { mode: :indicatif },
+      :'Tryb przypuszczający' => { mode: :conditionnel },
+      :'Tryb rozkazujący'     => { mode: :imperatif },
+      :Imiesłowy              => { mode: :participe }
+    }
+  end
+
+  def genre_analyze
+    {
+      :'m' => { genre: :masculin },
+      :'f' => { genre: :feminin },
+      :'n' => { genre: :neutre }
+    }
+  end
+
+  def person_and_number_analyze
+    { :ja  => { number: :singulier, person: :première },
+      :ty  => { number: :singulier, person: :seconde },
+      :on  => { number: :singulier, person: :troisième },
+      :ona => { number: :singulier, person: :troisième },
+      :ono => { number: :singulier, person: :troisième },
+      :my  => { number: :pluriel,   person: :première },
+      :wy  => { number: :pluriel,   person: :seconde },
+      :oni => { number: :pluriel,   person: :troisième },
+      :one => { number: :pluriel,   person: :troisième } }
+  end
+
+  def case_analyze
+    {
+      :Mianownik   => { case: :nominatif },
+      :Dopełniacz  => { case: :génétif },
+      :Celownik    => { case: :datif },
+      :Biernik     => { case: :accusatif },
+      :Narzędnik   => { case: :instrumental },
+      :Miejscownik => { case: :locatif },
+      :Wołacz      => { case: :vocatif }
+    }
+  end
+
+  def genre_and_number_analyze
+    { :'r.mo./r.mzw' => { genre: :masculin_animé,     number: :singulier },
+      :'r.mrz.'      => { genre: :masculin,           number: :singulier },
+      :'r.ż'         => { genre: :feminin,            number: :singulier },
+      :'r.n'         => { genre: :neutre,             number: :singulier },
+      :'r.mo.'       => { genre: :masculin_personnel, number: :pluriel },
+      :'r.nmo.'      => { genre: :commun,             number: :pluriel } }
+  end
 
 #   def check_if_unique
 #     if where(content: content).empty?
