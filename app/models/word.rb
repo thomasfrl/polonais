@@ -65,17 +65,23 @@ class Word < ApplicationRecord
     self.fake_word = word if word.decorate_content == decorate_content
   end
 
-  # def total_counter
-  #   total = counter
-  #   associated_words.each do |word|
-  #     total + word.counter
-  #   end
-  #   total
-  # end
+  def total_counter
+    total = 0
+    main_word = self if main == true
+    main_word.associated_words.each do |word|
+      total += word.fake_word.counter
+    end
+    total
+  end
 
   # scope :all_main, -> { where(main: true, valid: true).order( : :desc) }
   # scope :valid, -> { where(valid: true).order(counter: :desc) }
   # scope :not_valid, -> { where(valid: false).order(counter: :desc) }
+  # scope :ordered -> { joins(:fake_word).order('fake_word.counter DESC') }
+
+  def self.ordered_by_counter
+    sort_by {|word| word.total_counter }.reverse
+  end
 
   private
 
