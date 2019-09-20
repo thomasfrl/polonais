@@ -22,6 +22,10 @@ class Word < ApplicationRecord
   has_many :associated_words, class_name: 'Word', foreign_key: 'main_word_id'
   belongs_to :main_word, class_name: 'Word', optional: true
 
+  def decorate_content
+    content.downcase.strip
+  end
+
   %i[genre_and_number time mode genre].each do |name|
     define_method "set_#{name}" do |string|
       attributes = send("#{name}_collection")[string.to_sym]
@@ -45,6 +49,20 @@ class Word < ApplicationRecord
     return nil unless attributes
 
     assign_attributes(attributes)
+  end
+
+  def set_main_word
+    if number == 'singulier' && grammatical_case == 'nominatif'
+      if type == :nom_commun
+        self.main  = true
+      elsif type == :adjectif && genre =~ /masculin/
+        self.main  = true
+      end
+    end
+  end
+
+  def set_fake_word(word)
+    self.fake_word = word if word.decorate_content == decorate_content
   end
 
   # def total_counter

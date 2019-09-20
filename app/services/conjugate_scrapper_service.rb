@@ -5,9 +5,10 @@ class ConjugateScrapperService
 
   def initialize(fake_word)
     @fake_word = fake_word
-    @uri       = URI(@@adress + @fake_word.content)
+    @uri       = URI(@@adress + @fake_word.content.downcase)
     @post      = Nokogiri::HTML(Net::HTTP.get(@uri))
   end
+
   # miss:
   # check if good page
   # check if already exist word
@@ -32,7 +33,7 @@ class ConjugateScrapperService
           # word.set_genre(genre)
           # word.set_time(time_name)
           # word.set_mode(mode_name)
-          # set_fake_word(word)
+          # word.set_fake_word
           # word.save
         end
       end
@@ -55,9 +56,5 @@ class ConjugateScrapperService
       set_fake_word(main_word)
       main_word
     end
-  end
-
-  def set_fake_word(word)
-    word.fake_word = fake_word if fake_word.content == word.content
   end
 end

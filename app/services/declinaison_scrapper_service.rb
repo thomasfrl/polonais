@@ -3,13 +3,16 @@ class DeclinaisonScrapperService
   @@adresses = { adjectif: 'http://odmiana.net/odmiana-przez-przypadki-przymiotnika-',
                  name:     'http://odmiana.net/odmiana-przez-przypadki-rzeczownika-' }
 
+  # miss:
+  # check if good page
+  # check if already exist word
+
   def initialize(fake_word)
-    @main_word      = Word.new
     @words          = []
-    @fake_word      = fake_word.downcase
+    @fake_word      = fake_word
     @uri            = {}
     %i[adjectif name].each do |type|
-      @uri[type] = URI(@@adresses[type] + @fake_word)
+      @uri[type] = URI(@@adresses[type] + @fake_word.content.downcase.strip)
     end
   end
 
@@ -27,64 +30,48 @@ class DeclinaisonScrapperService
   def analyze_adjectif
     trs = post.css('tbody tr').drop(1)
     genres = trs.shift.css('td').drop(1).map(&:text)
-    trs.each do |tr|
-      tds = tr.css('td')
-      grammatical_case = tds.shift.text
-      tds.each_with_index do |td, i|
-        puts td.text
-        # word = Word.new(content: td.text)
-        # word.set_genre_and_number(genres[i])
-        # word.set_case(grammatical_case)
-        # set_fake_word(word)
-        # words << word
-        # set_main_word(word)
-        #miss analyze of colspan
-      end
+    analyze_word(trs) do |word, i|
+      word.set_genre_and_number(genres[i])
+      word.type = :adjectif
     end
-    save_words
   end
 
   def analyze_name
-    analyze_word do |content, grammatical_case|
-      word = Word.new(content: content)
-      word.set_case(grammatical_case)
+    trs = post.css('tbody tr').drop(1)
+    analyze_word(trs) do |word,i|
       word.number = (i == 0 ? 'singulier' : 'pluriel')
+      word.type = :nom_commun
     end
   end
 
-  def analyze_word
-    trs = post.css('tbody tr').drop(1)
+  def analyze_word(trs)
     trs.each do |tr|
-      tds = tr.css('td')
+      tds   = tr.css('td')
+      decal = 0
       grammatical_case = tds.shift.text
       tds.each_with_index do |td, i|
-        yield(td.text, grammatical_case) if block_given?
+        size = td['colspan'].to_i
+        size = 1 if size == 0
+        size.each do
+          word = Word.new(content: td.text)
+          yield(word, i + decal) if block_given?
 
-        set_fake_word(word)
-        set_main_word(word)
-        words << word
-        #miss analyze of colspan
+          word.set_case(grammatical_case)
+          word.set_fake_word(fake_word)
+          word.set_main_word
+          words << word
+        end
+        decal += size - 1
       end
     end
     save_words
   end
 
   def save_words
+    main_word = words.find(main: true)
     words.each do |word|
-      word.main_word = @main_word
-      word.type      = :nom_commun
+      word.main_word = main_word
       word.save
     end
-  end
-
-  def set_main_word(word) #dans model?
-    if word.number == 'singulier' && word.grammatical_case == 'nominatif'
-      word.main  = true
-      @main_word = word
-    end
-  end
-
-  def set_fake_word(word)
-    word.fake_word = fake_word if fake_word.content == word.content
   end
 end
