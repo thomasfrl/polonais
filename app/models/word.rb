@@ -22,6 +22,8 @@ class Word < ApplicationRecord
   has_many :associated_words, class_name: 'Word', foreign_key: 'main_word_id'
   belongs_to :main_word, class_name: 'Word', optional: true
 
+  validates :check_if_uniq
+
   def decorate_content
     content.downcase.strip
   end
@@ -84,6 +86,21 @@ class Word < ApplicationRecord
   end
 
   private
+
+  def check_if_uniq
+    uniq = false
+    self.class.all.each do |word|
+      uniq = false
+      %i[type genre number grammatical_case person mode aspect time content].each do |atr|
+        if word.send(attr) != send(attr)
+          uniq = true
+          break
+        end
+      end
+      break if uniq == false
+    end
+    errors.add(:base)
+  end
 
   def time_collection
     {
