@@ -1,7 +1,7 @@
 class Word < ApplicationRecord
   # before_save :check_if_unique
 
-  enum type: %i[verbe adjectif mot_commun adverbe pronom autre]
+  enum category: %i[verbe adjectif mot_commun adverbe pronom autre]
 
   enum genre: %i[masculin feminin neutre masculin_personnel masculin_animé commun]
 
@@ -55,9 +55,9 @@ class Word < ApplicationRecord
 
   def set_main_word
     if number == 'singulier' && grammatical_case == 'nominatif'
-      if type == 'mot_commun'
+      if category == 'mot_commun'
         self.main  = true
-      elsif type == :adjectif && genre =~ /masculin/
+      elsif category == :adjectif && genre =~ /masculin/
         self.main  = true
       end
     end
@@ -91,7 +91,7 @@ class Word < ApplicationRecord
     uniq = false
     self.class.all.each do |word|
       uniq = false
-      %i[type genre number grammatical_case person mode aspect time content].each do |atr|
+      %i[category genre number grammatical_case person mode aspect time content].each do |atr|
         if word.send(attr) != send(attr)
           uniq = true
           break
