@@ -55,7 +55,7 @@ class Word < ApplicationRecord
 
   def set_main_word
     if number == 'singulier' && grammatical_case == 'nominatif'
-      if type == :nom_commun
+      if type == 'mot_commun'
         self.main  = true
       elsif type == :adjectif && genre =~ /masculin/
         self.main  = true

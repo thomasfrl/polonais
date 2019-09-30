@@ -67,7 +67,7 @@ class DeclinaisonScrapperService
   end
 
   def save_words
-    main_word = words.find(main: true)
+    main_word = words.find { |word| word.main == true }
     words.each do |word|
       word.main_word = main_word
       word.save
