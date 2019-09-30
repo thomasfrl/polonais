@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_06_27_212033) do
+ActiveRecord::Schema.define(version: 2019_08_26_120634) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,7 +27,6 @@ ActiveRecord::Schema.define(version: 2019_06_27_212033) do
     t.string "content"
     t.string "traduction", default: [], array: true
     t.boolean "is_valid", default: false
-    t.integer "word_ids", default: [], array: true
     t.integer "type"
     t.integer "person"
     t.integer "grammatical_case"
@@ -35,8 +34,12 @@ ActiveRecord::Schema.define(version: 2019_06_27_212033) do
     t.bigint "fake_word_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "mode"
+    t.integer "time"
+    t.integer "aspect"
+    t.bigint "main_word_id"
     t.index ["fake_word_id"], name: "index_words_on_fake_word_id"
-    t.index ["word_ids"], name: "index_words_on_word_ids", using: :gin
+    t.index ["main_word_id"], name: "index_words_on_main_word_id"
   end
 
 end

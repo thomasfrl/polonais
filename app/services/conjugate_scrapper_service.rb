@@ -23,18 +23,18 @@ class ConjugateScrapperService
           genre   = pronom.slice!(/\(.+\)/).to_s.gsub(/(\(|\))/, '').strip
           content = conjuguate_item.css('.conj-result').first.content
 
-          puts "mode: #{mode_name}"
-          puts "time:  #{time_name}"
-          puts "genre: #{genre}"
-          puts "pronom: #{pronom}"
-          puts "content: #{content}"
-          # word = Word.new content: content, type: :verbe, main_word: main_word
-          # word.set_pronom(pronom)
-          # word.set_genre(genre)
-          # word.set_time(time_name)
-          # word.set_mode(mode_name)
-          # word.set_fake_word
-          # word.save
+          # puts "mode: #{mode_name}"
+          # puts "time:  #{time_name}"
+          # puts "genre: #{genre}"
+          # puts "pronom: #{pronom}"
+          # puts "content: #{content}"
+          word = Word.new content: content, type: :verbe, main_word: main_word
+          word.set_pronom(pronom)
+          word.set_genre(genre)
+          word.set_time(time_name)
+          word.set_mode(mode_name)
+          word.set_fake_word
+          word.save
         end
       end
     end

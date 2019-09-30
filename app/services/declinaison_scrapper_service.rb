@@ -1,7 +1,7 @@
 class DeclinaisonScrapperService
   attr_accessor :post, :fake_word, :uri, :words
-  @@adresses = { adjectif: 'http://odmiana.net/odmiana-przez-przypadki-przymiotnika-',
-                 name:     'http://odmiana.net/odmiana-przez-przypadki-rzeczownika-' }
+  @@adresses = { adjectif: 'https://odmiana.net/odmiana-przez-przypadki-przymiotnika-',
+                 name:     'https://odmiana.net/odmiana-przez-przypadki-rzeczownika-' }
 
   # miss:
   # check if good page
@@ -18,17 +18,17 @@ class DeclinaisonScrapperService
 
   def process
     uri.each do |type, link|
-      post = Nokogiri::HTML(Net::HTTP.get(link))
-      if post.css('h1').text != '301 Moved'
-        send("analyze_#{type}")
-      end
+      @post = Nokogiri::HTML(Net::HTTP.get(link))
+      trs = post.css('tbody tr').drop(1)
+      next if trs.blank?
+
+      send("analyze_#{type}", trs)
     end
   end
 
   private
 
-  def analyze_adjectif
-    trs = post.css('tbody tr').drop(1)
+  def analyze_adjectif(trs)
     genres = trs.shift.css('td').drop(1).map(&:text)
     analyze_word(trs) do |word, i|
       word.set_genre_and_number(genres[i])
@@ -36,11 +36,10 @@ class DeclinaisonScrapperService
     end
   end
 
-  def analyze_name
-    trs = post.css('tbody tr').drop(1)
+  def analyze_name(trs)
     analyze_word(trs) do |word,i|
-      word.number = (i == 0 ? 'singulier' : 'pluriel')
-      word.type = :nom_commun
+      word.number = (i == 0 ? :singulier : :pluriel)
+      word.type = :mot_commun
     end
   end
 
@@ -52,7 +51,7 @@ class DeclinaisonScrapperService
       tds.each_with_index do |td, i|
         size = td['colspan'].to_i
         size = 1 if size == 0
-        size.each do
+        size.times do
           word = Word.new(content: td.text)
           yield(word, i + decal) if block_given?
 

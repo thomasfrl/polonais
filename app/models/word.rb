@@ -5,9 +5,9 @@ class Word < ApplicationRecord
 
   enum genre: %i[masculin feminin neutre masculin_personnel masculin_animé commun]
 
-  enum number: %i[sigulier pluriel]
+  enum number: %i[singulier pluriel]
 
-  enum grammatical_case: %i[nominatif accusatif gerondif datif instrumental locatif vocatif]
+  enum grammatical_case: %i[nominatif accusatif génétif datif instrumental locatif vocatif]
 
   enum person: %i[première seconde troisième]
 
@@ -22,7 +22,7 @@ class Word < ApplicationRecord
   has_many :associated_words, class_name: 'Word', foreign_key: 'main_word_id'
   belongs_to :main_word, class_name: 'Word', optional: true
 
-  validates :check_if_uniq
+  # validates :check_if_uniq
 
   def decorate_content
     content.downcase.strip
@@ -141,13 +141,13 @@ class Word < ApplicationRecord
 
   def case_collection
     {
-      :Mianownik   => { case: :nominatif },
-      :Dopełniacz  => { case: :génétif },
-      :Celownik    => { case: :datif },
-      :Biernik     => { case: :accusatif },
-      :Narzędnik   => { case: :instrumental },
-      :Miejscownik => { case: :locatif },
-      :Wołacz      => { case: :vocatif }
+      :Mianownik   => { grammatical_case: :nominatif },
+      :Dopełniacz  => { grammatical_case: :génétif },
+      :Celownik    => { grammatical_case: :datif },
+      :Biernik     => { grammatical_case: :accusatif },
+      :Narzędnik   => { grammatical_case: :instrumental },
+      :Miejscownik => { grammatical_case: :locatif },
+      :Wołacz      => { grammatical_case: :vocatif }
     }
   end
 
