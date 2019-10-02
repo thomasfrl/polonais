@@ -19,10 +19,13 @@ class DeclinaisonScrapperService
   def process
     uri.each do |type, link|
       @post = Nokogiri::HTML(Net::HTTP.get(link))
-      trs = post.css('tbody tr').drop(1)
-      next if trs.blank?
+      post.css('tbody').each do |tbody|
+        trs = tbody.css('tr').drop(1)
+        next if trs.blank?
 
-      send("analyze_#{type}", trs)
+        send("analyze_#{type}", trs)
+      end
+      save_words
     end
   end
 
@@ -32,14 +35,14 @@ class DeclinaisonScrapperService
     genres = trs.shift.css('td').drop(1).map(&:text)
     analyze_word(trs) do |word, i|
       word.set_genre_and_number(genres[i])
-      word.type = :adjectif
+      word.category = :adjectif
     end
   end
 
   def analyze_name(trs)
     analyze_word(trs) do |word,i|
       word.number = (i == 0 ? :singulier : :pluriel)
-      word.type = :mot_commun
+      word.category = :mot_commun
     end
   end
 
@@ -51,19 +54,18 @@ class DeclinaisonScrapperService
       tds.each_with_index do |td, i|
         size = td['colspan'].to_i
         size = 1 if size == 0
-        size.times do
+        size.times do |j|
           word = Word.new(content: td.text)
-          yield(word, i + decal) if block_given?
+          yield(word, i + decal + j) if block_given?
 
           word.set_case(grammatical_case)
-          word.set_fake_word(fake_word)
-          word.set_main_word
+          word.set_fake_word
+          word.set_main
           words << word
         end
         decal += size - 1
       end
     end
-    save_words
   end
 
   def save_words

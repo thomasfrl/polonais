@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_09_30_184931) do
+ActiveRecord::Schema.define(version: 2019_10_02_100650) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -38,6 +38,7 @@ ActiveRecord::Schema.define(version: 2019_09_30_184931) do
     t.integer "time"
     t.integer "aspect"
     t.bigint "main_word_id"
+    t.integer "genre"
     t.index ["fake_word_id"], name: "index_words_on_fake_word_id"
     t.index ["main_word_id"], name: "index_words_on_main_word_id"
   end

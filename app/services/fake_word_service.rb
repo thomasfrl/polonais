@@ -4,7 +4,7 @@ class FakeWordService
       file.each do |line|
         content, counter = line.split
         unless FakeWord.all.pluck(:content).include? content
-          FakeWord.create(content: content, counter: counter.to_i)
+          FakeWord.create(content: content.downcase.strip, counter: counter.to_i)
         end
       end
     end

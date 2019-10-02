@@ -18,13 +18,12 @@ class Word < ApplicationRecord
   enum time: %i[présent passé future]
 
   belongs_to :fake_word, optional: true
-
   has_many :associated_words, class_name: 'Word', foreign_key: 'main_word_id'
   belongs_to :main_word, class_name: 'Word', optional: true
 
   # validates :check_if_uniq
 
-  def decorate_content
+  def decorated_content
     content.downcase.strip
   end
 
@@ -53,18 +52,18 @@ class Word < ApplicationRecord
     assign_attributes(attributes)
   end
 
-  def set_main_word
+  def set_main
     if number == 'singulier' && grammatical_case == 'nominatif'
       if category == 'mot_commun'
         self.main  = true
-      elsif category == :adjectif && genre =~ /masculin/
+      elsif category == 'adjectif' && genre == 'masculin'
         self.main  = true
       end
     end
   end
 
-  def set_fake_word(word)
-    self.fake_word = word if word.decorate_content == decorate_content
+  def set_fake_word
+    self.fake_word = FakeWord.find_by content: decorated_content
   end
 
   def total_counter
@@ -88,7 +87,7 @@ class Word < ApplicationRecord
   private
 
   def check_if_uniq
-    uniq = false
+    uniq = true
     self.class.all.each do |word|
       uniq = false
       %i[category genre number grammatical_case person mode aspect time content].each do |atr|
@@ -97,9 +96,11 @@ class Word < ApplicationRecord
           break
         end
       end
-      break if uniq == false
+      if uniq == false
+        errors.add(:base)
+        break
+      end
     end
-    errors.add(:base)
   end
 
   def time_collection
@@ -152,20 +153,11 @@ class Word < ApplicationRecord
   end
 
   def genre_and_number_collection
-    { :'r.mo./r.mzw' => { genre: :masculin_animé,     number: :singulier },
-      :'r.mrz.'      => { genre: :masculin,           number: :singulier },
-      :'r.ż'         => { genre: :feminin,            number: :singulier },
-      :'r.n'         => { genre: :neutre,             number: :singulier },
-      :'r.mo.'       => { genre: :masculin_personnel, number: :pluriel },
-      :'r.nmo.'      => { genre: :commun,             number: :pluriel } }
+    { :'r.mo./r.mzw'   => { genre: :masculin_animé,     number: :singulier },
+      :'r.mrz.'        => { genre: :masculin,           number: :singulier },
+      :'rodzaj żeński' => { genre: :feminin,            number: :singulier },
+      :'rodzaj nijaki' => { genre: :neutre,             number: :singulier },
+      :'r.mo.'         => { genre: :masculin_personnel, number: :pluriel },
+      :'r.nmo.'        => { genre: :commun,             number: :pluriel } }
   end
-
-#   def check_if_unique
-#     if where(content: content).empty?
-#       valid = false
-#       return true
-#     end
-#   end
-
-
 end
