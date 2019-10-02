@@ -12,7 +12,7 @@ class DeclinaisonScrapperService
     @fake_word      = fake_word
     @uri            = {}
     %i[adjectif name].each do |type|
-      @uri[type] = URI(@@adresses[type] + @fake_word.content.downcase.strip)
+      @uri[type] = URI URI.escape(@@adresses[type] + @fake_word.content.downcase.strip)
     end
   end
 

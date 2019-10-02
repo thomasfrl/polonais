@@ -5,12 +5,11 @@ class ConjugateScrapperService
 
   def initialize(fake_word)
     @fake_word = fake_word
-    @uri       = URI(@@adress + @fake_word.content.downcase)
+    @uri       = URI(URI.escape(@@adress + @fake_word.content.downcase))
     @post      = Nokogiri::HTML(Net::HTTP.get(@uri))
   end
 
   # miss:
-  # check if good page
   # check if already exist word
 
   def process
@@ -23,12 +22,7 @@ class ConjugateScrapperService
           genre   = pronom.slice!(/\(.+\)/).to_s.gsub(/(\(|\))/, '').strip
           content = conjuguate_item.css('.conj-result').first.content
 
-          # puts "mode: #{mode_name}"
-          # puts "time:  #{time_name}"
-          # puts "genre: #{genre}"
-          # puts "pronom: #{pronom}"
-          # puts "content: #{content}"
-          word = Word.new content: content, type: :verbe, main_word: main_word
+          word = Word.new content: content, category: :verbe, main_word: main_word
           word.set_pronom(pronom)
           word.set_genre(genre)
           word.set_time(time_name)
@@ -49,11 +43,13 @@ class ConjugateScrapperService
                               .gsub(/(polonaisConjugaison de «|»)/, '')
                               .strip
 
-      main_word = Word.create content:   content,
-                              type:      :verbe,
-                              mode:      :infinitif
+      main_word = Word.create content:  content,
+                              category: :verbe,
+                              mode:     :infinitif,
+                              main:     :true
 
-      set_fake_word(main_word)
+      main_word.set_fake_word
+      main_word.save
       main_word
     end
   end

@@ -105,6 +105,7 @@ class Word < ApplicationRecord
 
   def time_collection
     {
+      :'Czas przyszły prosty'  => { time: :présent },
       :'Czas teraźniejszy'     => { time: :présent },
       :'Czas przeszły'         => { time: :passé },
       :'Czas przyszły złożony' => { time: :future }
