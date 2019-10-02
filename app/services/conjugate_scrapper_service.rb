@@ -9,9 +9,6 @@ class ConjugateScrapperService
     @post      = Nokogiri::HTML(Net::HTTP.get(@uri))
   end
 
-  # miss:
-  # check if already exist word
-
   def process
     post.css('.conj-tense-wrapper').each do |mode|
       mode_name = mode.css('.conj-block.container.result-block').first.content

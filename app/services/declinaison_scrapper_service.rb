@@ -3,10 +3,6 @@ class DeclinaisonScrapperService
   @@adresses = { adjectif: 'https://odmiana.net/odmiana-przez-przypadki-przymiotnika-',
                  name:     'https://odmiana.net/odmiana-przez-przypadki-rzeczownika-' }
 
-  # miss:
-  # check if good page
-  # check if already exist word
-
   def initialize(fake_word)
     @words          = []
     @fake_word      = fake_word

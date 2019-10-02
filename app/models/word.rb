@@ -21,7 +21,7 @@ class Word < ApplicationRecord
   has_many :associated_words, class_name: 'Word', foreign_key: 'main_word_id'
   belongs_to :main_word, class_name: 'Word', optional: true
 
-  # validates :check_if_uniq
+  validates_uniqueness_of :content, scope: %i[category genre number grammatical_case person mode aspect time]
 
   def decorated_content
     content.downcase.strip
@@ -85,23 +85,6 @@ class Word < ApplicationRecord
   end
 
   private
-
-  def check_if_uniq
-    uniq = true
-    self.class.all.each do |word|
-      uniq = false
-      %i[category genre number grammatical_case person mode aspect time content].each do |atr|
-        if word.send(attr) != send(attr)
-          uniq = true
-          break
-        end
-      end
-      if uniq == false
-        errors.add(:base)
-        break
-      end
-    end
-  end
 
   def time_collection
     {
