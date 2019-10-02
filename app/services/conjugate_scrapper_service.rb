@@ -1,5 +1,5 @@
 class ConjugateScrapperService
-  attr_accessor :post, :fake_word, :uri
+  attr_accessor :post, :fake_word, :uri, :words
 
   @@adress = 'https://fr.bab.la/conjugaison/polonais/'
 
@@ -7,6 +7,7 @@ class ConjugateScrapperService
     @fake_word = fake_word
     @uri       = URI(URI.escape(@@adress + @fake_word.content.downcase))
     @post      = Nokogiri::HTML(Net::HTTP.get(@uri))
+    @words     = []
   end
 
   def process
@@ -26,7 +27,13 @@ class ConjugateScrapperService
           word.set_mode(mode_name)
           word.set_fake_word
           word.save
+          words << word
         end
+      end
+    end
+    if words.map(&:fake_word_id).compact.blank?
+      words.each do |word|
+        word.destroy
       end
     end
   end
@@ -40,13 +47,14 @@ class ConjugateScrapperService
                               .gsub(/(polonaisConjugaison de «|»)/, '')
                               .strip
 
-      main_word = Word.create content:  content,
-                              category: :verbe,
-                              mode:     :infinitif,
-                              main:     :true
+      main_word = Word.new content:  content,
+                           category: :verbe,
+                           mode:     :infinitif,
+                           main:     :true
 
       main_word.set_fake_word
       main_word.save
+      words << main_word
       main_word
     end
   end

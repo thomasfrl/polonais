@@ -14,6 +14,7 @@ class DeclinaisonScrapperService
 
   def process
     uri.each do |type, link|
+      sleep 10
       @post = Nokogiri::HTML(Net::HTTP.get(link))
       post.css('tbody').each do |tbody|
         trs = tbody.css('tr').drop(1)
@@ -67,7 +68,7 @@ class DeclinaisonScrapperService
   def save_words
     main_word = words.find { |word| word.main == true }
     words.each do |word|
-      word.main_word = main_word
+      word.main_word = main_word unless main_word == word
       word.save
     end
   end

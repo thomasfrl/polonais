@@ -1,6 +1,4 @@
 class Word < ApplicationRecord
-  # before_save :check_if_unique
-
   enum category: %i[verbe adjectif mot_commun adverbe pronom autre]
 
   enum genre: %i[masculin feminin neutre masculin_personnel masculin_animé commun]
@@ -16,10 +14,10 @@ class Word < ApplicationRecord
   enum aspect: %i[perfectif imperfectif]
 
   enum time: %i[présent passé future]
-
-  belongs_to :fake_word, optional: true
+  
   has_many :associated_words, class_name: 'Word', foreign_key: 'main_word_id'
   belongs_to :main_word, class_name: 'Word', optional: true
+  belongs_to :fake_word, optional: true
 
   validates_uniqueness_of :content, scope: %i[category genre number grammatical_case person mode aspect time]
 
@@ -67,22 +65,27 @@ class Word < ApplicationRecord
   end
 
   def total_counter
-    total = 0
-    main_word = self if main == true
-    main_word.associated_words.each do |word|
-      total += word.fake_word.counter
-    end
-    total
+    main_word = main == true ? self : self.main_word
+    init      = main_word.fake_word.try(:counter).to_i
+
+    main_word.associated_words.map(&:fake_word)
+                              .compact
+                              .map(&:counter)
+                              .inject(init, :+)
   end
+
+  # def self.ordered_by_counter
+  #   sort_by { |word| word.total_counter }.reverse
+  # end
 
   # scope :all_main, -> { where(main: true, valid: true).order( : :desc) }
   # scope :valid, -> { where(valid: true).order(counter: :desc) }
   # scope :not_valid, -> { where(valid: false).order(counter: :desc) }
   # scope :ordered -> { joins(:fake_word).order('fake_word.counter DESC') }
 
-  def self.ordered_by_counter
-    sort_by {|word| word.total_counter }.reverse
-  end
+  # def self.ordered_by_counter
+  #   to_a.sort_by { |word| word.total_counter }.reverse
+  # end
 
   private
 
