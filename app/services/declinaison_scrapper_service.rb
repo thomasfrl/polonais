@@ -71,5 +71,10 @@ class DeclinaisonScrapperService
       word.main_word = main_word unless main_word == word
       word.save
     end
+    # if words.map(&:fake_word_id).compact.blank?
+    #   words.each do |word|
+    #     word.destroy
+    #   end
+    # end
   end
 end
